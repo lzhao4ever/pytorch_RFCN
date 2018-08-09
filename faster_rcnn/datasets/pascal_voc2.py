@@ -12,24 +12,24 @@ import PIL
 import numpy as np
 import scipy.sparse
 import subprocess
-import cPickle
+import _pickle as cPickle
 import math
 import glob
 import uuid
 import scipy.io as sio
 import xml.etree.ElementTree as ET
 
-from .imdb import imdb
-from .imdb import ROOT_DIR
-from .imdb import MATLAB
+from datasets.imdb import imdb
+from datasets.imdb import ROOT_DIR
+from datasets.imdb import MATLAB
 
-from ..utils.cython_bbox import bbox_overlaps
-from ..utils.boxes_grid import get_boxes_grid
+from utils.cython_bbox import bbox_overlaps
+from utils.boxes_grid import get_boxes_grid
 
 # TODO: make fast_rcnn irrelevant
 # >>>> obsolete, because it depends on sth outside of this project
-from ..fast_rcnn.config import cfg
-from ..rpn_msr.generate_anchors import generate_anchors
+from fast_rcnn.config import cfg
+from rpn_msr.generate_anchors import generate_anchors
 # <<<< obsolete
 
 class pascal_voc(imdb):
@@ -131,22 +131,22 @@ class pascal_voc(imdb):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = cPickle.load(fid)
-            print '{} gt roidb loaded from {}'.format(self.name, cache_file)
+            print('{} gt roidb loaded from {}'.format(self.name, cache_file))
             return roidb
 
         gt_roidb = [self._load_pascal_subcategory_exemplar_annotation(index)
                     for index in self.image_index]
 
         if cfg.IS_RPN:
-            # print out recall
+            # print(out recall
             for i in xrange(1, self.num_classes):
-                print '{}: Total number of boxes {:d}'.format(self.classes[i], self._num_boxes_all[i])
-                print '{}: Number of boxes covered {:d}'.format(self.classes[i], self._num_boxes_covered[i])
-                print '{}: Recall {:f}'.format(self.classes[i], float(self._num_boxes_covered[i]) / float(self._num_boxes_all[i]))
+                print('{}: Total number of boxes {:d}'.format(self.classes[i], self._num_boxes_all[i]))
+                print('{}: Number of boxes covered {:d}'.format(self.classes[i], self._num_boxes_covered[i]))
+                print('{}: Recall {:f}'.format(self.classes[i], float(self._num_boxes_covered[i]) / float(self._num_boxes_all[i])))
 
         with open(cache_file, 'wb') as fid:
             cPickle.dump(gt_roidb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote gt roidb to {}'.format(cache_file)
+        print('wrote gt roidb to {}'.format(cache_file))
 
         return gt_roidb
 
@@ -157,7 +157,7 @@ class pascal_voc(imdb):
         format.
         """
         filename = os.path.join(self._data_path, 'Annotations', index + '.xml')
-        # print 'Loading: {}'.format(filename)
+        # print('Loading: {}'.format(filename)
         def get_data_from_tag(node, tag):
             return node.getElementsByTagName(tag)[0].childNodes[0].data
 
@@ -450,28 +450,28 @@ class pascal_voc(imdb):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = cPickle.load(fid)
-            print '{} roidb loaded from {}'.format(self.name, cache_file)
+            print('{} roidb loaded from {}'.format(self.name, cache_file))
             return roidb
 
         if self._image_set != 'test':
             gt_roidb = self.gt_roidb()
 
-            print 'Loading region proposal network boxes...'
+            print('Loading region proposal network boxes...')
             model = cfg.REGION_PROPOSAL
             rpn_roidb = self._load_rpn_roidb(gt_roidb, model)
-            print 'Region proposal network boxes loaded'
+            print('Region proposal network boxes loaded')
             roidb = imdb.merge_roidbs(rpn_roidb, gt_roidb)
         else:
-            print 'Loading region proposal network boxes...'
+            print('Loading region proposal network boxes...')
             model = cfg.REGION_PROPOSAL
             roidb = self._load_rpn_roidb(None, model)
-            print 'Region proposal network boxes loaded'
+            print('Region proposal network boxes loaded')
 
-        print '{} region proposals per image'.format(self._num_boxes_proposal / len(self.image_index))
+        print('{} region proposals per image'.format(self._num_boxes_proposal / len(self.image_index)))
 
         with open(cache_file, 'wb') as fid:
             cPickle.dump(roidb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote roidb to {}'.format(cache_file)
+        print('wrote roidb to {}'.format(cache_file))
 
         return roidb
 
@@ -520,7 +520,7 @@ class pascal_voc(imdb):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = cPickle.load(fid)
-            print '{} ss roidb loaded from {}'.format(self.name, cache_file)
+            print('{} ss roidb loaded from {}'.format(self.name, cache_file))
             return roidb
 
         if int(self._year) == 2007 or self._image_set != 'test':
@@ -531,7 +531,7 @@ class pascal_voc(imdb):
             roidb = self._load_selective_search_roidb(None)
         with open(cache_file, 'wb') as fid:
             cPickle.dump(roidb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote ss roidb to {}'.format(cache_file)
+        print('wrote ss roidb to {}'.format(cache_file))
 
         return roidb
 
@@ -563,7 +563,7 @@ class pascal_voc(imdb):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = cPickle.load(fid)
-            print '{} ss roidb loaded from {}'.format(self.name, cache_file)
+            print('{} ss roidb loaded from {}'.format(self.name, cache_file))
             return roidb
 
         gt_roidb = self.gt_roidb()
@@ -571,7 +571,7 @@ class pascal_voc(imdb):
         roidb = imdb.merge_roidbs(gt_roidb, ss_roidb)
         with open(cache_file, 'wb') as fid:
             cPickle.dump(roidb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote ss roidb to {}'.format(cache_file)
+        print('wrote ss roidb to {}'.format(cache_file))
 
         return roidb
 
@@ -604,9 +604,9 @@ class pascal_voc(imdb):
         for cls_ind, cls in enumerate(self.classes):
             if cls == '__background__':
                 continue
-            print 'Writing {} VOC results file'.format(cls)
+            print('Writing {} VOC results file'.format(cls))
             filename = path + 'det_' + self._image_set + '_' + cls + '.txt'
-            print filename
+            print(filename)
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.image_index):
                     dets = all_boxes[cls_ind][im_ind]
@@ -643,7 +643,7 @@ class pascal_voc(imdb):
         # for each image
         for im_ind, index in enumerate(self.image_index):
             filename = os.path.join(output_dir, index + '.txt')
-            print 'Writing PASCAL results to file ' + filename
+            print('Writing PASCAL results to file ' + filename)
             with open(filename, 'wt') as f:
                 # for each class
                 for cls_ind, cls in enumerate(self.classes):
@@ -660,7 +660,7 @@ class pascal_voc(imdb):
         # for each image
         for im_ind, index in enumerate(self.image_index):
             filename = os.path.join(output_dir, index + '.txt')
-            print 'Writing PASCAL results to file ' + filename
+            print('Writing PASCAL results to file ' + filename)
             with open(filename, 'wt') as f:
                 dets = all_boxes[im_ind]
                 if dets == []:

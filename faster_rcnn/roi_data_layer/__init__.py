@@ -4,4 +4,4 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ross Girshick
 # --------------------------------------------------------
-import roidb
+from roi_data_layer import roidb

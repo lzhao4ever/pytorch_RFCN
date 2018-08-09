@@ -136,12 +136,14 @@ for step in range(start_step, end_step+1):
         log_print(log_text)
 
         if _DEBUG:
-            log_print('\tTP: %.2f%%, TF: %.2f%%, fg/bg=(%d/%d)' % (tp/fg*100., tf/bg*100., fg/step_cnt, bg/step_cnt))
+            log_print('\tTP: %.2f%%, TF: %.2f%%, fg/bg=(%d/%d)' % (tp/float(fg)*100., tf/float(bg)*100., fg/float(step_cnt), bg/float(step_cnt)))
             log_print('\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_box: %.4f' % (
-                net.rpn.cross_entropy.data.cpu().numpy()[0], net.rpn.loss_box.data.cpu().numpy()[0],
-                net.cross_entropy.data.cpu().numpy()[0], net.loss_box.data.cpu().numpy()[0])
+                net.rpn.cross_entropy.data.cpu().numpy(), net.rpn.loss_box.data.cpu().numpy(),
+                net.cross_entropy.data.cpu().numpy(), net.loss_box.data.cpu().numpy())
             )
-            print " "
+
+            print(" ")
+
         re_cnt = True
 
 

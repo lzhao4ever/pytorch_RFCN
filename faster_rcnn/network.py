@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import numpy as np
-
+import pdb
 
 class Conv2d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, relu=True, same_padding=False, bn=False):
@@ -115,7 +115,9 @@ def clip_gradient(model, clip_norm):
             totalnorm += modulenorm ** 2
     totalnorm = np.sqrt(totalnorm)
 
-    norm = clip_norm / max(totalnorm, clip_norm)
+    # check torch.nn.utils.clip_gradient
+    norm = float(clip_norm / max(totalnorm, clip_norm))
     for p in model.parameters():
         if p.requires_grad:
-            p.grad.mul_(norm)
+            #pdb.set_trace() 
+            p.grad.data.mul_(norm)

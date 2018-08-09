@@ -11,12 +11,12 @@ import PIL
 import numpy as np
 import scipy.sparse
 
-from . import ROOT_DIR
-from ..utils.cython_bbox import bbox_overlaps
+from datasets.imdb import ROOT_DIR
+from utils.cython_bbox import bbox_overlaps
 
 # TODO: make fast_rcnn irrelevant
 # >>>> obsolete, because it depends on sth outside of this project
-from ..fast_rcnn.config import cfg
+from fast_rcnn.config import cfg
 # <<<< obsolete
 
 class imdb(object):
@@ -161,7 +161,7 @@ class imdb(object):
                          'flipped' : True}
             self.roidb.append(entry)
         self._image_index = self._image_index * 2
-        print 'finish appending flipped images'
+        print('finish appending flipped images')
 
     def evaluate_recall(self, candidate_boxes, ar_thresh=0.5):
         # Record max overlap value for each gt box

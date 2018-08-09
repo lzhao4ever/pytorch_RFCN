@@ -11,11 +11,11 @@ import PIL
 import numpy as np
 import scipy.sparse
 
-from ..utils.cython_bbox import bbox_overlaps
+from utils.cython_bbox import bbox_overlaps
 
 # TODO: make fast_rcnn irrelevant
 # >>>> obsolete, because it depends on sth outside of this project
-from ..fast_rcnn.config import cfg
+from fast_rcnn.config import cfg
 
 # <<<< obsolete
 
@@ -33,7 +33,7 @@ class imdb(object):
         self._image_index = []
         self._obj_proposer = 'selective_search'
         self._roidb = None
-        print self.default_roidb
+        print(self.default_roidb)
         self._roidb_handler = self.default_roidb
         # Use this dict for storing dataset specific config options
         self.config = {}

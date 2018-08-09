@@ -3,20 +3,20 @@ import PIL
 import numpy as np
 import scipy.sparse
 import subprocess
-import cPickle
+import _pickle as cPickle
 import math
 import glob
 
-from .imdb import imdb
-from .imdb import ROOT_DIR
+from datasets.imdb import imdb
+from datasets.imdb import ROOT_DIR
 
-from ..utils.cython_bbox import bbox_overlaps
-from ..utils.boxes_grid import get_boxes_grid
+from utils.cython_bbox import bbox_overlaps
+from utils.boxes_grid import get_boxes_grid
 
 # TODO: make fast_rcnn irrelevant
 # >>>> obsolete, because it depends on sth outside of this project
-from ..fast_rcnn.config import cfg
-from ..rpn_msr.generate_anchors import generate_anchors
+from fast_rcnn.config import cfg
+from rpn_msr.generate_anchors import generate_anchors
 # <<<< obsolete
 
 class kitti(imdb):
@@ -123,22 +123,22 @@ class kitti(imdb):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = cPickle.load(fid)
-            print '{} gt roidb loaded from {}'.format(self.name, cache_file)
+            print('{} gt roidb loaded from {}'.format(self.name, cache_file))
             return roidb
 
         gt_roidb = [self._load_kitti_voxel_exemplar_annotation(index)
                     for index in self.image_index]
 
         if cfg.IS_RPN:
-            # print out recall
+            # print(out recall
             for i in xrange(1, self.num_classes):
-                print '{}: Total number of boxes {:d}'.format(self.classes[i], self._num_boxes_all[i])
-                print '{}: Number of boxes covered {:d}'.format(self.classes[i], self._num_boxes_covered[i])
-                print '{}: Recall {:f}'.format(self.classes[i], float(self._num_boxes_covered[i]) / float(self._num_boxes_all[i]))
+                print('{}: Total number of boxes {:d}'.format(self.classes[i], self._num_boxes_all[i]))
+                print('{}: Number of boxes covered {:d}'.format(self.classes[i], self._num_boxes_covered[i]))
+                print('{}: Recall {:f}'.format(self.classes[i], float(self._num_boxes_covered[i]) / float(self._num_boxes_all[i])))
 
         with open(cache_file, 'wb') as fid:
             cPickle.dump(gt_roidb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote gt roidb to {}'.format(cache_file)
+        print('wrote gt roidb to {}'.format(cache_file))
 
         return gt_roidb
 
@@ -449,65 +449,65 @@ class kitti(imdb):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 roidb = cPickle.load(fid)
-            print '{} roidb loaded from {}'.format(self.name, cache_file)
+            print('{} roidb loaded from {}'.format(self.name, cache_file))
             return roidb
 
         if self._image_set != 'test':
             gt_roidb = self.gt_roidb()
 
-            print 'Loading region proposal network boxes...'
+            print('Loading region proposal network boxes...')
             if self._image_set == 'trainval':
                 model = cfg.REGION_PROPOSAL + '_227/'
             else:
                 model = cfg.REGION_PROPOSAL + '_125/'
             rpn_roidb = self._load_rpn_roidb(gt_roidb, model)
-            print 'Region proposal network boxes loaded'
+            print('Region proposal network boxes loaded')
             roidb = imdb.merge_roidbs(rpn_roidb, gt_roidb)
 
-            # print 'Loading voxel pattern boxes...'
+            # print('Loading voxel pattern boxes...'
             # if self._image_set == 'trainval':
             #    model = '3DVP_227'
             # else:
             #    model = '3DVP_125/'
             # vp_roidb = self._load_voxel_pattern_roidb(gt_roidb, model)
-            # print 'Voxel pattern boxes loaded'
+            # print('Voxel pattern boxes loaded'
             # roidb = imdb.merge_roidbs(vp_roidb, gt_roidb)
 
-            # print 'Loading selective search boxes...'
+            # print('Loading selective search boxes...'
             # ss_roidb = self._load_selective_search_roidb(gt_roidb)
-            # print 'Selective search boxes loaded'
+            # print('Selective search boxes loaded'
 
-            # print 'Loading ACF boxes...'
+            # print('Loading ACF boxes...'
             # acf_roidb = self._load_acf_roidb(gt_roidb)
-            # print 'ACF boxes loaded'
+            # print('ACF boxes loaded'
 
             # roidb = imdb.merge_roidbs(ss_roidb, gt_roidb)
             # roidb = imdb.merge_roidbs(roidb, acf_roidb)
         else:
-            print 'Loading region proposal network boxes...'
+            print('Loading region proposal network boxes...')
             model = cfg.REGION_PROPOSAL + '_227/'
             roidb = self._load_rpn_roidb(None, model)
-            print 'Region proposal network boxes loaded'
+            print('Region proposal network boxes loaded')
 
-            # print 'Loading voxel pattern boxes...'
+            # print('Loading voxel pattern boxes...'
             # model = '3DVP_227/'
             # roidb = self._load_voxel_pattern_roidb(None, model)
-            # print 'Voxel pattern boxes loaded'
+            # print('Voxel pattern boxes loaded'
 
-            # print 'Loading selective search boxes...'
+            # print('Loading selective search boxes...'
             # roidb = self._load_selective_search_roidb(None)
-            # print 'Selective search boxes loaded'
+            # print('Selective search boxes loaded'
 
-            # print 'Loading ACF boxes...'
+            # print('Loading ACF boxes...'
             # acf_roidb = self._load_acf_roidb(None)
-            # print 'ACF boxes loaded'
+            # print('ACF boxes loaded'
 
             # roidb = imdb.merge_roidbs(roidb, acf_roidb)
-        print '{} region proposals per image'.format(self._num_boxes_proposal / len(self.image_index))
+        print('{} region proposals per image'.format(self._num_boxes_proposal / len(self.image_index)))
 
         with open(cache_file, 'wb') as fid:
             cPickle.dump(roidb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote roidb to {}'.format(cache_file)
+        print('wrote roidb to {}'.format(cache_file))
 
         return roidb
 
@@ -539,7 +539,7 @@ class kitti(imdb):
             raw_data = raw_data[inds,:4]
             self._num_boxes_proposal += raw_data.shape[0]
             box_list.append(raw_data)
-            print 'load {}: {}'.format(model, index)
+            print('load {}: {}'.format(model, index))
 
         return self.create_roidb_from_box_list(box_list, gt_roidb)
 
@@ -573,7 +573,7 @@ class kitti(imdb):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 box_list = cPickle.load(fid)
-            print '{} boxes loaded from {}'.format(self.name, cache_file)
+            print('{} boxes loaded from {}'.format(self.name, cache_file))
         else:
             # set the prefix
             model = 'selective_search/'
@@ -592,7 +592,7 @@ class kitti(imdb):
 
             with open(cache_file, 'wb') as fid:
                 cPickle.dump(box_list, fid, cPickle.HIGHEST_PROTOCOL)
-            print 'wrote selective search boxes to {}'.format(cache_file)
+            print('wrote selective search boxes to {}'.format(cache_file))
 
         return self.create_roidb_from_box_list(box_list, gt_roidb)
 
@@ -603,7 +603,7 @@ class kitti(imdb):
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
                 box_list = cPickle.load(fid)
-            print '{} boxes loaded from {}'.format(self.name, cache_file)
+            print('{} boxes loaded from {}'.format(self.name, cache_file))
         else:
             # set the prefix
             model = 'ACF/'
@@ -622,7 +622,7 @@ class kitti(imdb):
 
             with open(cache_file, 'wb') as fid:
                 cPickle.dump(box_list, fid, cPickle.HIGHEST_PROTOCOL)
-            print 'wrote ACF boxes to {}'.format(cache_file)
+            print('wrote ACF boxes to {}'.format(cache_file))
 
         return self.create_roidb_from_box_list(box_list, gt_roidb)
 
@@ -649,7 +649,7 @@ class kitti(imdb):
         # for each image
         for im_ind, index in enumerate(self.image_index):
             filename = os.path.join(output_dir, index + '.txt')
-            print 'Writing KITTI results to file ' + filename
+            print('Writing KITTI results to file ' + filename)
             with open(filename, 'wt') as f:
                 # for each class
                 for cls_ind, cls in enumerate(self.classes):
@@ -673,7 +673,7 @@ class kitti(imdb):
     def evaluate_detections_one_file(self, all_boxes, output_dir):
         # open results file
         filename = os.path.join(output_dir, 'detections.txt')
-        print 'Writing all KITTI results to file ' + filename
+        print('Writing all KITTI results to file ' + filename)
         with open(filename, 'wt') as f:
             # for each image
             for im_ind, index in enumerate(self.image_index):
@@ -698,7 +698,7 @@ class kitti(imdb):
         # for each image
         for im_ind, index in enumerate(self.image_index):
             filename = os.path.join(output_dir, index + '.txt')
-            print 'Writing KITTI results to file ' + filename
+            print('Writing KITTI results to file ' + filename)
             with open(filename, 'wt') as f:
                 # for each class
                 for cls_ind, cls in enumerate(self.classes):
@@ -715,7 +715,7 @@ class kitti(imdb):
         # for each image
         for im_ind, index in enumerate(self.image_index):
             filename = os.path.join(output_dir, index + '.txt')
-            print 'Writing KITTI results to file ' + filename
+            print('Writing KITTI results to file ' + filename)
             with open(filename, 'wt') as f:
                 dets = all_boxes[im_ind]
                 if dets == []:

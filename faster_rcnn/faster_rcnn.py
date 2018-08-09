@@ -54,7 +54,8 @@ class RPN(nn.Module):
         # rpn score
         rpn_cls_score = self.score_conv(rpn_conv1)
         rpn_cls_score_reshape = self.reshape_layer(rpn_cls_score, 2)
-        rpn_cls_prob = F.softmax(rpn_cls_score_reshape)
+        #rpn_cls_prob = F.softmax(rpn_cls_score_reshape)
+        rpn_cls_prob = F.softmax(rpn_cls_score_reshape, dim=0)
         rpn_cls_prob_reshape = self.reshape_layer(rpn_cls_prob, len(self.anchor_scales)*3*2)
 
         # rpn boxes
@@ -83,7 +84,7 @@ class RPN(nn.Module):
         rpn_cls_score = torch.index_select(rpn_cls_score, 0, rpn_keep)
         rpn_label = torch.index_select(rpn_label, 0, rpn_keep)
 
-        fg_cnt = torch.sum(rpn_label.data.ne(0))
+        fg_cnt = torch.sum(rpn_label.data.ne(0)).float()
 
         rpn_cross_entropy = F.cross_entropy(rpn_cls_score, rpn_label, ignore_index=-1)
 
@@ -226,7 +227,8 @@ class FasterRCNN(nn.Module):
         ave_cls_score_rois = ave_cls_score_rois.squeeze()
         ave_bbox_pred_rois = ave_bbox_pred_rois.squeeze()
         
-        cls_score_pred = F.softmax(ave_cls_score_rois)
+        #cls_score_pred = F.softmax(ave_cls_score_rois)
+        cls_score_pred = F.softmax(ave_cls_score_rois, dim=0)
         if self.training:
             self.cross_entropy, self.loss_box = self.build_loss(ave_cls_score_rois, ave_bbox_pred_rois, roi_data)
 
@@ -247,7 +249,7 @@ class FasterRCNN(nn.Module):
             self.bg_cnt = bg_cnt
 
         ce_weights = torch.ones(cls_score.size()[1])
-        ce_weights[0] = float(fg_cnt) / bg_cnt
+        ce_weights[0] = float(fg_cnt) / (float(bg_cnt) + 1e-4)
         ce_weights = ce_weights.cuda()
         cross_entropy = F.cross_entropy(cls_score, label, weight=ce_weights)
 
@@ -256,7 +258,7 @@ class FasterRCNN(nn.Module):
         bbox_targets = torch.mul(bbox_targets, bbox_inside_weights)
         bbox_pred = torch.mul(bbox_pred, bbox_inside_weights)
 
-        loss_box = F.smooth_l1_loss(bbox_pred, bbox_targets, size_average=False) / (fg_cnt + 1e-4)
+        loss_box = F.smooth_l1_loss(bbox_pred, bbox_targets, size_average=False) / (float(fg_cnt) + 1e-4)
 
         return cross_entropy, loss_box
 
